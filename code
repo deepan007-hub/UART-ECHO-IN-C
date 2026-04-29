@@ -1,0 +1,31 @@
+#include <stdint.h>
+
+// Mock UART registers (example purpose)
+#define UART_DR   (*((volatile unsigned int*)0x4000C000)) // Data Register
+#define UART_FR   (*((volatile unsigned int*)0x4000C018)) // Flag Register
+
+#define UART_FR_RXFE 0x10  // Receive FIFO Empty
+#define UART_FR_TXFF 0x20  // Transmit FIFO Full
+
+// Function to receive a character
+char UART_ReadChar() {
+    while (UART_FR & UART_FR_RXFE);  // Wait until data received
+    return (char)(UART_DR & 0xFF);
+}
+
+// Function to send a character
+void UART_WriteChar(char c) {
+    while (UART_FR & UART_FR_TXFF);  // Wait until transmit buffer empty
+    UART_DR = c;
+}
+
+int main() {
+    char c;
+
+    while (1) {
+        c = UART_ReadChar();   // Receive
+        UART_WriteChar(c);     // Echo back
+    }
+
+    return 0;
+}
